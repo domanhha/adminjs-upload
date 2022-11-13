@@ -3,6 +3,13 @@ import { EditPropertyProps, flat } from 'adminjs'
 import { DropZone, FormGroup, Label, DropZoneItem } from '@adminjs/design-system'
 import PropertyCustom from '../types/property-custom.type'
 
+const getFileUrl = (path: string, name: string, baseUrl?: string): string => {
+  if (baseUrl) {
+    return `${baseUrl}/${name}`
+  }
+  return path
+}
+
 const Edit: FC<EditPropertyProps> = ({ property, record, onChange }) => {
   const { params } = record
   const { custom } = property as unknown as { custom: PropertyCustom }
@@ -10,6 +17,10 @@ const Edit: FC<EditPropertyProps> = ({ property, record, onChange }) => {
   const path = flat.get(params, custom.filePathProperty)
   const key = flat.get(params, custom.keyProperty)
   const file = flat.get(params, custom.fileProperty)
+  const name = flat.get(
+    params,
+    custom.fileNameProperty ? custom.fileNameProperty : custom.keyProperty,
+  )
 
   const [originalKey, setOriginalKey] = useState(key)
   const [filesToUpload, setFilesToUpload] = useState<Array<File>>([])
@@ -74,7 +85,11 @@ const Edit: FC<EditPropertyProps> = ({ property, record, onChange }) => {
         files={filesToUpload}
       />
       {!custom.multiple && key && path && !filesToUpload.length && file !== null && (
-        <DropZoneItem filename={key} src={path} onRemove={handleRemove} />
+        <DropZoneItem
+          filename={key}
+          src={getFileUrl(path, name, custom.opts?.baseUrl)}
+          onRemove={handleRemove}
+        />
       )}
       {custom.multiple && key && key.length && path ? (
         <>
@@ -88,7 +103,7 @@ const Edit: FC<EditPropertyProps> = ({ property, record, onChange }) => {
               <DropZoneItem
                 key={singleKey}
                 filename={singleKey}
-                src={path[index]}
+                src={getFileUrl(path[index], name[index], custom.opts?.baseUrl)}
                 onRemove={() => handleMultiRemove(singleKey)}
               />
             ) : ''

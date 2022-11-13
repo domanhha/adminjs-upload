@@ -22,12 +22,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = __importStar(require("react"));
 const adminjs_1 = require("adminjs");
 const design_system_1 = require("@adminjs/design-system");
+const getFileUrl = (path, name, baseUrl) => {
+    if (baseUrl) {
+        return `${baseUrl}/${name}`;
+    }
+    return path;
+};
 const Edit = ({ property, record, onChange }) => {
+    var _a;
     const { params } = record;
     const { custom } = property;
     const path = adminjs_1.flat.get(params, custom.filePathProperty);
     const key = adminjs_1.flat.get(params, custom.keyProperty);
     const file = adminjs_1.flat.get(params, custom.fileProperty);
+    const name = adminjs_1.flat.get(params, custom.fileNameProperty ? custom.fileNameProperty : custom.keyProperty);
     const [originalKey, setOriginalKey] = react_1.useState(key);
     const [filesToUpload, setFilesToUpload] = react_1.useState([]);
     react_1.useEffect(() => {
@@ -68,15 +76,16 @@ const Edit = ({ property, record, onChange }) => {
         mimeTypes: custom.mimeTypes,
         maxSize: custom.maxSize,
     }} files={filesToUpload}/>
-      {!custom.multiple && key && path && !filesToUpload.length && file !== null && (<design_system_1.DropZoneItem filename={key} src={path} onRemove={handleRemove}/>)}
+      {!custom.multiple && key && path && !filesToUpload.length && file !== null && (<design_system_1.DropZoneItem filename={key} src={getFileUrl(path, name, (_a = custom.opts) === null || _a === void 0 ? void 0 : _a.baseUrl)} onRemove={handleRemove}/>)}
       {custom.multiple && key && key.length && path ? (<>
           {key.map((singleKey, index) => {
+        var _a;
         // when we remove items we set only path index to nulls.
         // key is still there. This is because
         // we have to maintain all the indexes. So here we simply filter out elements which
         // were removed and display only what was left
         const currentPath = path[index];
-        return currentPath ? (<design_system_1.DropZoneItem key={singleKey} filename={singleKey} src={path[index]} onRemove={() => handleMultiRemove(singleKey)}/>) : '';
+        return currentPath ? (<design_system_1.DropZoneItem key={singleKey} filename={singleKey} src={getFileUrl(path[index], name[index], (_a = custom.opts) === null || _a === void 0 ? void 0 : _a.baseUrl)} onRemove={() => handleMultiRemove(singleKey)}/>) : '';
     })}
         </>) : ''}
     </design_system_1.FormGroup>);
